@@ -13,8 +13,10 @@ I wrote this to make it easier to view the questions to answers in [#JodelWahl](
 1. Get a sharable link to a jodel. E.g. `https://share.jodel.com/post?postId=59aea982039e85001026c0d8&ojFilter=false`
 2. Replace `https://share.jodel.com/post` with `https://ocjojo.github.io/jodel-ama-viewer/`
 
-Find posts by a specific User by clicking on the ID.
-You may also click on @{UserId} links to get a view with the post you are originally from together with all posts by UserId.
+While scrolling down you might find jodels referencing previously asked questions.
+You can click on @{UserId} links to get a view with the post from UserId. So you can look up the original questions.
+
+By clicking on a UserId itself you can filter by a user.
 
 ## Suggestions & Bugs
 
