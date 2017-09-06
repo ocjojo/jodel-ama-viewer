@@ -4,6 +4,8 @@ var data = [];
 var ojs = {};
 var postId;
 var next;
+var last;
+var loading = false;
 
 function debounce(fn, delay) {
 	var timer = null;
@@ -26,19 +28,32 @@ function getUrlParams(){
     }, { })
 }
 
+function hideLoader(){
+	$('.loader').hide()
+	loading = false;
+}
+
 function getData(){
+	if(loading) return Promise.reject('already loading');
+	if(last && next === last) return Promise.reject('Nothing more to load');
 	if(!postId) return Promise.reject('no postId');
+
+	loading = true;
+	$('.loader').show()
+	last = next;
+
 	var url = 'https://share.jodel.com/post/' + postId + '/replies?ojFilter=true'
 	if(next)
 		url += "&next=" + next;
-
+	
 	return $.get(url)
 	.then(transformData)
+	.then(hideLoader, hideLoader)
 }
 
 function transformData(res){
 	// save reference to next batch of replies
-	next = res.next;
+	next = data.next || next;
 
 	// match important data in html string and save to objects
 	// this is way faster than parsing the string to a dom representation
@@ -202,7 +217,7 @@ var app = new Vue({
 				this.posts = data
 			});
 		}
-	}, 1000));
+	}, 250));
 
 	// event listener for filter-oj
 	this.$bus.$on('filter-oj', (ojId) => {

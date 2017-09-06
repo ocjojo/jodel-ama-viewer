@@ -232,6 +232,15 @@ header img
     border-radius: 14px;
 }
 
+.loader
+{
+    font-size: 20px;
+
+    padding: 10px 20px 30px;
+
+    text-align: center;
+}
+
 
 @media (min-height: 570px)
 {
