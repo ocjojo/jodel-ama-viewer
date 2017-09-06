@@ -33,7 +33,6 @@ function transformData(res){
 				if(matches[2].charAt(0) == '@'){
 					//if found, only get reference
 					lastObj.reference = matches[2].split(' ', 1)[0].slice(1);
-					console.log(lastObj.message, ojs[lastObj.reference]);
 				}
 				break;
 			default:
@@ -46,21 +45,32 @@ function transformData(res){
 	}
 }
 
+//define global event bus
 const EventBus = new Vue()
-
 Object.defineProperties(Vue.prototype, {
-  $bus: {
-    get: function () {
-      return EventBus
-    }
-  }
+	$bus: {
+		get: function () {
+			return EventBus
+		}
+	}
 })
 
+// filter component
+Vue.component('oj-filter', {
+	props: ['id'],
+	methods: {
+		reset: function(){
+      		this.$bus.$emit('filter-oj');
+		}
+	},
+	template: '#filter-template'
+})
+
+// post component
 Vue.component('post', {
 	props: ['post'],
 	methods: {
 		filterOj: function(post){
-
       		this.$bus.$emit('filter-oj', post.ojId);
 		}
 	},
@@ -70,16 +80,26 @@ Vue.component('post', {
 var app = new Vue({
   el: '#app',
   data: {
-    posts: []
+    posts: [],
+    filter: null
   },
   created() {
+  	// get initial data
   	$.get('https://share.jodel.com/post/59aea982039e85001026c0d8/replies?ojFilter=true')
 	.then(transformData)
 	.then(()=>{
 		this.posts = data
 	})
+	// event listener for filter-oj
 	this.$bus.$on('filter-oj', (ojId) => {
-		this.posts = ojs[ojId]
+		if(ojId){
+			this.posts = ojs[ojId]	
+			this.filter = ojId
+		} else {
+			this.posts = data
+			this.filter = null
+		}
+		
     })
   }
 })

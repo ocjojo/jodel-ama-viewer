@@ -4,7 +4,10 @@
  * #4F86C6
  * #6C49B8
  */
-
+*
+{
+    box-sizing: border-box;
+}
 html,
 body
 {
@@ -68,9 +71,10 @@ body
 
     position: relative;
 
-    margin: 4px 20px;
-    padding: 5px 20px 0;
+    margin: 4px 0 4px 20px;
     padding: 0 4px;
+
+    cursor: pointer;
 
     border: 1px solid;
     border-radius: 14px;
@@ -94,6 +98,37 @@ body
 .time:before
 {
     content: '🕑';
+}
+.filter-box
+{
+    position: relative;
+
+    display: inline-block;
+
+    margin: 10px 0;
+
+    cursor: pointer;
+
+    border-radius: 14px;
+    background: #6c49b8;
+}
+.filter
+{
+    display: inline-block;
+
+    padding: 6px;
+
+    border-radius: 14px;
+    background: #6c49b8;
+    -webkit-box-shadow: 0 0 0 2px #379392;
+       -moz-box-shadow: 0 0 0 2px #379392;
+            box-shadow: 0 0 0 2px #379392;
+}
+.filter-box:after
+{
+    padding: 6px;
+
+    content: 'x';
 }
 
 @media (min-width: 719px)

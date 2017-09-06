@@ -5,10 +5,18 @@
 	<link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
+	<script type="text/x-template" id="filter-template">
+		<div class="filter-box" @click="reset()">
+			<div class="filter">
+				<span class="oj">{{ id }}</span>
+			</div>
+		</div>
+	</script>
+
 	<script type="text/x-template" id="post-template">
 		<div class="post-box">
 			<div class="meta">
-				<span class="oj" @click="filterOj(post)">{{ post.ojId }}</span>
+				<span class="oj" @click="filterOj(post)" title="filter by this jodler">{{ post.ojId }}</span>
 				<span class="time">{{ post.time }}</span>
 			</div>
 			<div class="post" v-html="post.message"></div>
@@ -16,6 +24,7 @@
 	</script>
 
 	<div id="app">
+		<oj-filter v-if="filter" v-bind:id="filter"></oj-filter>
 		<post
 		v-for="post in posts"
 		v-bind:post="post"
