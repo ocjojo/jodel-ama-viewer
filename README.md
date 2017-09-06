@@ -9,7 +9,7 @@ I wrote this to make it easier to view the questions to answers in [#JodelWahl](
 ## Usage
 
 1. Get a sharable link to a jodel. E.g. `https://share.jodel.com/post?postId=59aea982039e85001026c0d8&ojFilter=false`
-2. Replace `https://share.jodel.com/post` with `http://ocjojo.github.io/jodel-ama-viewer/`
+2. Replace `https://share.jodel.com/post` with `https://ocjojo.github.io/jodel-ama-viewer/`
 
 
 ## Disclaimer
