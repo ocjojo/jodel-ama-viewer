@@ -2,7 +2,7 @@
 
 var data = [];
 var ojs = {};
-var postId = "59aea982039e85001026c0d8";
+var postId;
 var next;
 
 function debounce(fn, delay) {
@@ -16,7 +16,18 @@ function debounce(fn, delay) {
 	};
 }
 
+function getUrlParams(){
+	var params = location.href.split('?');
+	return !params[1]? {}: params[1].split('&')
+    .reduce((params, param) => {
+      let [ key, value ] = param.split('=');
+      params[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : '';
+      return params;
+    }, { })
+}
+
 function getData(){
+	if(!postId) return Promise.reject('no postId');
 	var url = 'https://share.jodel.com/post/' + postId + '/replies?ojFilter=true'
 	if(next)
 		url += "&next=" + next;
@@ -37,12 +48,12 @@ function transformData(res){
 	while ((matches = regex.exec(res.html)) !== null) {
 		switch(matches[1]){
 			case "oj-text":
-				lastObj.ojId = matches[2];
+				lastObj.ojId = matches[2].toUpperCase();
 				// map post to oj
-				if(Array.isArray(ojs[matches[2]])){
-					ojs[matches[2]].push(lastObj);
+				if(Array.isArray(ojs[lastObj.ojId])){
+					ojs[lastObj.ojId].push(lastObj);
 				} else {
-					ojs[matches[2]] = [lastObj];
+					ojs[lastObj.ojId] = [lastObj];
 				}
 				break;
 			case "time-text":
@@ -52,8 +63,8 @@ function transformData(res){
 				// check for reference to other poster
 				if(matches[2].charAt(0) == '@'){
 					//if found, make clickable
-					lastObj.message = matches[2].replace(/@(\w+)/, (match)=>{
-						return '<span class="oj-link">' + match + '</span>';
+					lastObj.message = matches[2].replace(/@(\w+)/g, (match)=>{
+						return '<span class="oj-link">' + match.toUpperCase() + '</span>';
 					})
 				} else {
 					lastObj.message = matches[2];
@@ -62,7 +73,10 @@ function transformData(res){
 			default:
 				lastObj.id = data.length;
 				lastObj.votes = matches[2];
-				data.push(lastObj);
+				// filters out image posts atm
+				if(lastObj.message){
+					data.push(lastObj);	
+				}
 				lastObj = {};
 				break;
 		}
@@ -100,7 +114,7 @@ Vue.component('post', {
 		thread: function($event){
 			if(!$($event.target).is('.oj-link')) return
 			// set reference based on eventTarget as there might be multiple
-			this.post.reference = $event.target.innerText.slice(1);
+			this.post.reference = $event.target.innerText.slice(1).toUpperCase();
 			this.$bus.$emit('thread', this.post);
 		}
 	},
@@ -143,7 +157,8 @@ var app = new Vue({
     posts: [],
     filter: null,
     thread: null,
-    scroll: 0
+    scroll: 0,
+    input: false
   },
   methods:{
   	saveScroll: function(){
@@ -164,10 +179,16 @@ var app = new Vue({
   	}
   },
   created() {
-  	// get initial data
-  	getData().then(()=>{
-		this.posts = data
-	});
+  	var params = getUrlParams();
+  	if(params.postId){
+  		postId = params.postId;
+  		// get initial data
+	  	getData().then(()=>{
+			this.posts = data
+		});
+  	} else {
+  		this.input = true
+  	}
 
 	// endless scroll
 	$(window).on("scroll", debounce(() =>{
