@@ -1,0 +1,105 @@
+/**
+ * #379392
+ * #4FB0C6
+ * #4F86C6
+ * #6C49B8
+ */
+
+html,
+body
+{
+    font-family: Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 100;
+
+    margin: 0;
+    padding: 0;
+
+    letter-spacing: .1px;
+
+    color: #fff;
+    background: #379392;
+}
+
+
+#app
+{
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.post-box
+{
+    position: relative;
+
+    margin-bottom: 10px;
+    padding: 4px 20px 10px;
+
+    background: #4fb0c6;
+}
+.post-box:after
+{
+    font-size: 22px;
+
+    position: absolute;
+    bottom: -11px;
+    left: 50%;
+
+    content: '...';
+    transform: translateX(-50%);
+
+    color: #4fb0c6;
+}
+.post
+{
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+.meta
+{
+    display: flex;
+
+    justify-content: space-between;
+}
+.oj
+{
+    font-weight: 200;
+
+    position: relative;
+
+    margin: 4px 20px;
+    padding: 5px 20px 0;
+    padding: 0 4px;
+
+    border: 1px solid;
+    border-radius: 14px;
+}
+.oj:before
+{
+    position: absolute;
+    top: -2px;
+    left: -22px;
+
+    content: '🦊';
+}
+.time
+{
+    font-size: 12px;
+
+    padding: 5px 20px 0;
+
+    opacity: .6;
+}
+.time:before
+{
+    content: '🕑';
+}
+
+@media (min-width: 719px)
+{
+    #app
+    {
+        margin-top: 50px;
+    }
+}

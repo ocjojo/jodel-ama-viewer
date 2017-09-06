@@ -1,0 +1,30 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>OJ Answers</title>
+	<link rel="stylesheet" type="text/css" href="./style.css">
+</head>
+<body>
+	<script type="text/x-template" id="post-template">
+		<div class="post-box">
+			<div class="meta">
+				<span class="oj" @click="filterOj(post)">{{ post.ojId }}</span>
+				<span class="time">{{ post.time }}</span>
+			</div>
+			<div class="post" v-html="post.message"></div>
+		</div>
+	</script>
+
+	<div id="app">
+		<post
+		v-for="post in posts"
+		v-bind:post="post"
+		v-bind:key="post.id">
+		</post>
+	</div>
+
+	<script type="text/javascript" src="https://lib.local.dev/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://lib.local.dev/vue/vue.js"></script>
+	<script type="text/javascript" src="./script.js"></script>
+</body>
+</html>
