@@ -16,20 +16,41 @@
 	<script type="text/x-template" id="post-template">
 		<div class="post-box">
 			<div class="meta">
-				<span class="oj" @click="filterOj(post)" title="filter by this jodler">{{ post.ojId }}</span>
+				<span class="oj" @click="filterOj" title="filter by this jodler">{{ post.ojId }}</span>
 				<span class="time">{{ post.time }}</span>
 			</div>
-			<div class="post" v-html="post.message"></div>
+			<div class="post" v-html="post.message" @click="thread($event)"></div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="thread-template">
+		<div class="thread-box">
+			<div class="back-box" @click="back"><span class="back">Back</span></div>
+			<post
+			v-for="post in possibleParents"
+			v-bind:post="post"
+			v-bind:key="post.id">
+			</post>
+			<div id="reference-post" class="post-box">
+				<div class="meta">
+					<span class="oj">{{ post.ojId }}</span>
+					<span class="time">{{ post.time }}</span>
+				</div>
+				<div class="post" v-html="post.message" @click="thread($event)"></div>
+			</div>
 		</div>
 	</script>
 
 	<div id="app">
-		<oj-filter v-if="filter" v-bind:id="filter"></oj-filter>
-		<post
-		v-for="post in posts"
-		v-bind:post="post"
-		v-bind:key="post.id">
-		</post>
+		<thread v-if="thread" v-bind:post="thread"></thread>
+		<div v-if="!thread">
+			<oj-filter v-if="filter" v-bind:id="filter"></oj-filter>
+			<post
+			v-for="post in posts"
+			v-bind:post="post"
+			v-bind:key="post.id">
+			</post>
+		</div>
 	</div>
 
 	<script type="text/javascript" src="https://lib.local.dev/jquery/jquery.min.js"></script>

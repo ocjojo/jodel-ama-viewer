@@ -27,6 +27,8 @@ body
 
 #app
 {
+    position: relative;
+
     max-width: 600px;
     margin: 0 auto;
 }
@@ -87,6 +89,10 @@ body
 
     content: '🦊';
 }
+.oj:hover
+{
+    background: #379392;
+}
 .time
 {
     font-size: 12px;
@@ -99,6 +105,17 @@ body
 {
     content: '🕑';
 }
+.oj-link
+{
+    cursor: pointer;
+
+    color: #6c49b8;
+}
+.oj-link:hover
+{
+    color: #379392;
+}
+
 .filter-box
 {
     position: relative;
@@ -130,11 +147,48 @@ body
 
     content: 'x';
 }
+#reference-post.post-box
+{
+    position: fixed;
+    bottom: 0;
+
+    max-width: 600px;
+    margin: 0;
+
+    background: #6c49b8;
+}
+#reference-post .oj-link{
+    color: #fff;
+}
+
+.back-box
+{
+    display: inline-block;
+
+    margin: 10px 0;
+    padding: 6px;
+
+    border-radius: 14px;
+    background: #6c49b8;
+}
+.back
+{
+    font-weight: 200;
+
+    margin: 4px 0;
+    padding: 0 4px;
+
+    cursor: pointer;
+
+    border: 1px solid;
+    border-radius: 14px;
+}
+
 
 @media (min-width: 719px)
 {
     #app
     {
-        margin-top: 50px;
+        padding-top: 50px;
     }
 }
