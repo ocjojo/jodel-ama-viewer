@@ -3,7 +3,7 @@
 var postId;
 var next;
 var last;
-var loading = false;
+var finished = false;
 
 var data = [];
 var ojs = {};
@@ -29,18 +29,9 @@ function getUrlParams(){
     }, { })
 }
 
-function hideLoader(){
-	$('.loader').hide()
-	loading = false;
-}
-
 function getData(){
-	if(loading) return Promise.reject('already loading');
-	if(last && next === last) return Promise.reject('Nothing more to load');
 	if(!postId) return Promise.reject('no postId');
 
-	loading = true;
-	$('.loader').show()
 	last = next;
 
 	var url = 'https://share.jodel.com/post/' + postId + '/replies?ojFilter=true'
@@ -49,12 +40,15 @@ function getData(){
 	
 	return $.get(url)
 	.then(transformData)
-	.then(hideLoader, hideLoader)
 }
 
 function transformData(res){
 	// save reference to next batch of replies
-	next = res.next || next;
+	if(res.next){
+		next =  res.next	
+	} else {
+		finished = true
+	}
 
 	// match important data in html string and save to objects
 	// this is way faster than parsing the string to a dom representation
@@ -76,15 +70,13 @@ function transformData(res){
 				lastObj.time = matches[2];
 				break;
 			case "post-message":
+				lastObj.references = [];
 				// check for reference to other poster
-				if(matches[2].charAt(0) == '@'){
+				lastObj.message = matches[2].replace(/@(\w+)/g, (match, m1)=>{
+					lastObj.references.push(m1.toUpperCase());
 					//if found, make clickable
-					lastObj.message = matches[2].replace(/@(\w+)/g, (match)=>{
-						return '<span class="oj-link">' + match.toUpperCase() + '</span>';
-					})
-				} else {
-					lastObj.message = matches[2];
-				}
+					return '<span class="oj-link">' + match.toUpperCase() + '</span>'
+				})
 				break;
 			default:
 				lastObj.id = data.length;
@@ -110,14 +102,15 @@ Object.defineProperties(Vue.prototype, {
 })
 
 // filter component
-Vue.component('oj-filter', {
-	props: ['id'],
+Vue.component('state', {
+	props: ['state'],
+	
 	methods: {
-		reset: function(){
+		back: function(){
       		this.$bus.$emit('back');
 		}
 	},
-	template: '#filter-template'
+	template: '#state-template'
 })
 
 // post component
@@ -128,59 +121,67 @@ Vue.component('post', {
       		this.$bus.$emit('filter-oj', this.post.ojId);
 		},
 		thread: function($event){
-			if(!$($event.target).is('.oj-link')) return
-			// set reference based on eventTarget as there might be multiple
-			this.post.reference = $event.target.innerText.slice(1).toUpperCase();
-			this.$bus.$emit('thread', this.post);
+			// if clicked on reference -> show possible questions by the @mention user
+			if($($event.target).is('.oj-link')){
+				// set reference based on eventTarget as there might be multiple
+				var reference = $event.target.innerText.slice(1).toUpperCase();
+				this.$bus.$emit('thread', {
+					pinned: this.post,
+					filter: reference,
+					refIsAnswer: true,
+					name: "Possible questions by User " + reference
+				});
+			// if clicked on post in general, find answers from OJ
+			} else if(this.post.ojId != 'OJ' && !$($event.target).is('.oj')){
+				this.$bus.$emit('thread', {
+					pinned: this.post,
+					filter: {
+						ojToId: this.post.ojId
+					},
+					name: "Answers from OJ"
+				});
+			}
 		}
 	},
 	template: '#post-template'
 })
 
 // thread component
-Vue.component('thread', {
+Vue.component('reference-post', {
 	props: ['post'],
-	computed: {
-		possibleParents: function () {
-			return ojs[this.post.reference]
-		}
-	},
 	methods: {
-		back: function(){
-			this.$bus.$emit('back');
-		},
 		setPadding: function(){
 			this.$nextTick(function () {
-				// set padding bottom to account for fixed post
-			    $('.thread-box').css('padding-bottom', $('#reference-post').height() + 14)
+				var height = $('#reference-post').height()
+				height = height ? height + 14 : 0
+		    	$('#app').css('padding-bottom',  height)
 			})
-		},
-		// noop, as the function is referenced in click event
-		thread: function(){}
-	},
-	mounted: function(){
-		this.setPadding()
+		}
 	},
 	updated: function(){
 		this.setPadding()
 	},
-	template: '#thread-template'
+	template: '#reference-post-template'
 })
 
 var app = new Vue({
   el: '#app',
   data: {
   	states: [{
-  		posts: [],
 	    filter: null,
-	    thread: null,
+	    pinned: null,
 	    scroll: 0
   	}],
+  	loading: false,
+  	finished: false,
     input: false
   },
   computed: {
 		currentState: function () {
-			return this.states[this.states.length - 1];
+			return this.states[this.states.length - 1]
+		},
+		showLoadMore: function(){
+			return !this.finished && !this.loading && this.currentState.name
 		}
 	},
   methods:{
@@ -193,32 +194,52 @@ var app = new Vue({
 			// re-set scroll position in original view
 			$(window).scrollTop(this.currentState.scroll)
 		})
-  	}
+  	},
+  	loadMore: function(){
+  		if(this.loading) return
+
+  		this.loading = true
+  		getData().then(()=>{
+			this.loading = false
+			this.finished = finished
+		});
+  	},
+  	posts: function(){
+		var filter = this.currentState.filter
+		if(typeof filter == "string")
+		{
+			return ojs[filter];
+		} else if(typeof filter =="object"
+			&& filter !== null
+			&& typeof filter.ojToId == "string")
+		{
+			return ojs.OJ.filter(post=>{
+				return post.references && post.references.indexOf(filter.ojToId) > -1
+			})
+		} else
+		{
+			return data
+		}
+	}
   },
   created() {
   	var params = getUrlParams();
   	if(params.postId){
   		postId = params.postId;
   		// get initial data
-	  	getData().then(()=>{
-			this.currentState.posts = data
-		});
+	  	this.loadMore()
   	} else {
   		this.input = true
   	}
 
 	// endless scroll
 	$(window).on("scroll", debounce(() =>{
+		if(finished) return
+
 		var scrollLeft = $(document).height() - $(window).scrollTop();
 		var windowHeight = $(window).outerHeight();
 		if (scrollLeft <= 2 * windowHeight) {
-			getData().then(()=>{
-				if(this.currentState.filter){
-					this.currentState.posts = ojs[this.currentState.filter];	
-				} else {
-					this.currentState.posts = data;
-				}
-			});
+			this.loadMore()
 		}
 	}, 250));
 
@@ -228,24 +249,20 @@ var app = new Vue({
 		this.states.push({
 			scroll: 0,
 			filter: ojId,
-			posts: ojs[ojId]
+			name: "Posts by " + ojId
 		})
 		this.reScroll();
     })
 
     //event listener for thread
-    this.$bus.$on('thread', (post) => {
+    this.$bus.$on('thread', (state) => {
 		this.saveScroll();
-		this.states.push({
-			scroll: 0,
-			thread: post,
-			posts: ojs[post.reference],
-			filter: [post.reference]
-		})
+		state.scroll = 0
+		this.states.push(state)
 		this.reScroll();
     })
 
-    this.$bus.$on('back', (post) => {
+    this.$bus.$on('back', () => {
     	this.states.pop();
     	this.reScroll();
     })

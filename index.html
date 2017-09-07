@@ -6,39 +6,35 @@
 	<link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
-	<script type="text/x-template" id="filter-template">
-		<div class="filter-box" @click="reset()">
-			<div class="filter">
-				<span class="oj">{{ id }}</span>
+	<script type="text/x-template" id="state-template">
+		<div id="state">
+			<div v-if="state.pinned" class="back-box" @click="back"><span class="back">Back</span></div>
+			<div v-else-if="state.filter" class="filter-box" @click="back()">
+				<div class="filter">
+					<span class="oj">{{ state.filter }}</span>
+				</div>
 			</div>
+			<h3 v-if="state.name">{{state.name}}</h3>
 		</div>
 	</script>
 
 	<script type="text/x-template" id="post-template">
-		<div class="post-box">
+		<div class="post-box" @click="thread($event)">
 			<div class="meta">
 				<span class="oj" @click="filterOj" title="filter by this jodler">{{ post.ojId }}</span>
 				<span class="time">{{ post.time }}</span>
 			</div>
-			<div class="post" v-html="post.message" @click="thread($event)"></div>
+			<div class="post" v-html="post.message"></div>
 		</div>
 	</script>
 
-	<script type="text/x-template" id="thread-template">
-		<div class="thread-box">
-			<div class="back-box" @click="back"><span class="back">Back</span></div>
-			<post
-			v-for="post in possibleParents"
-			v-bind:post="post"
-			v-bind:key="post.id">
-			</post>
-			<div id="reference-post" class="post-box">
-				<div class="meta">
-					<span class="oj">{{ post.ojId }}</span>
-					<span class="time">{{ post.time }}</span>
-				</div>
-				<div class="post" v-html="post.message" @click="thread($event)"></div>
+	<script type="text/x-template" id="reference-post-template">
+		<div v-if="post" id="reference-post" class="post-box">
+			<div class="meta">
+				<span class="oj">{{ post.ojId }}</span>
+				<span class="time">{{ post.time }}</span>
 			</div>
+			<div class="post" v-html="post.message"></div>
 		</div>
 	</script>
 
@@ -46,16 +42,17 @@
 		<header>
 			<h1><img src="./logo.png">AMA Viewer <a target="_blank" class="help" href="https://github.com/ocjojo/jodel-ama-viewer">?</a></h1>
 		</header>
-		<thread v-if="currentState.thread" v-bind:post="currentState.thread"></thread>
-		<div v-if="!currentState.thread">
-			<oj-filter v-if="currentState.filter" v-bind:id="currentState.filter"></oj-filter>
+		<state v-bind:state="currentState"></state>
+		<reference-post :class="{ answer: currentState.refIsAnswer }" v-bind:post="currentState.pinned"></reference-post>
+		<div class="post-container">
 			<post
-			v-for="post in currentState.posts"
+			v-for="post in posts()"
 			v-bind:post="post"
 			v-bind:key="post.id">
 			</post>
+			<div v-show="showLoadMore" class="load-more">There might be more answers, <span @click="loadMore">try loading</span></div>
+			<div v-show="loading" class="loader">Loading ...</div>
 		</div>
-		<div class="loader">Loading ...</div>
 	</div>
 
 	<script type="text/javascript" src="https://lib.local.dev/jquery/jquery.min.js"></script>
