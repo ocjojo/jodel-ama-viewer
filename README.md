@@ -15,6 +15,9 @@ I wrote this to make it easier to view the questions to answers in [#JodelWahl](
 3. The best way to view a AMA is to click on "OJ" to filter the jodels of OJ.  
 Then click on the references @{User} to see the posts of User together with the answer of OJ.
 
+![Controls](https://user-images.githubusercontent.com/2684851/30156044-d0b7ec40-93be-11e7-98ab-f08df21f46fd.png)
+
+
 ## Suggestions & Bugs
 
 Feel free to open an [issue](https://github.com/ocjojo/jodel-ama-viewer/issues) with suggestions on new features or bug reports.
