@@ -46,11 +46,11 @@
 		<header>
 			<h1><img src="./logo.png">AMA Viewer <a target="_blank" class="help" href="https://github.com/ocjojo/jodel-ama-viewer">?</a></h1>
 		</header>
-		<thread v-if="thread" v-bind:post="thread"></thread>
-		<div v-if="!thread">
-			<oj-filter v-if="filter" v-bind:id="filter"></oj-filter>
+		<thread v-if="currentState.thread" v-bind:post="currentState.thread"></thread>
+		<div v-if="!currentState.thread">
+			<oj-filter v-if="currentState.filter" v-bind:id="currentState.filter"></oj-filter>
 			<post
-			v-for="post in posts"
+			v-for="post in currentState.posts"
 			v-bind:post="post"
 			v-bind:key="post.id">
 			</post>

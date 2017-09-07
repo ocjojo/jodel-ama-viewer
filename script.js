@@ -1,11 +1,12 @@
 (function($){
 
-var data = [];
-var ojs = {};
 var postId;
 var next;
 var last;
 var loading = false;
+
+var data = [];
+var ojs = {};
 
 function debounce(fn, delay) {
 	var timer = null;
@@ -113,7 +114,7 @@ Vue.component('oj-filter', {
 	props: ['id'],
 	methods: {
 		reset: function(){
-      		this.$bus.$emit('filter-oj');
+      		this.$bus.$emit('back');
 		}
 	},
 	template: '#filter-template'
@@ -146,7 +147,7 @@ Vue.component('thread', {
 	},
 	methods: {
 		back: function(){
-			this.$bus.$emit('thread');
+			this.$bus.$emit('back');
 		},
 		setPadding: function(){
 			this.$nextTick(function () {
@@ -169,27 +170,28 @@ Vue.component('thread', {
 var app = new Vue({
   el: '#app',
   data: {
-    posts: [],
-    filter: null,
-    thread: null,
-    scroll: 0,
+  	states: [{
+  		posts: [],
+	    filter: null,
+	    thread: null,
+	    scroll: 0
+  	}],
     input: false
   },
+  computed: {
+		currentState: function () {
+			return this.states[this.states.length - 1];
+		}
+	},
   methods:{
   	saveScroll: function(){
   		// save scroll position in original view
-  		if(!this.thread && !this.filter){
-  			this.scroll = $(window).scrollTop()
-  		}
+		this.currentState.scroll = $(window).scrollTop()
   	},
   	reScroll: function(){
 		this.$nextTick(function () {
 			// re-set scroll position in original view
-			if(!this.thread && !this.filter){
-				$(window).scrollTop(this.scroll)
-			} else {
-				$(window).scrollTop(0)
-			}
+			$(window).scrollTop(this.currentState.scroll)
 		})
   	}
   },
@@ -199,7 +201,7 @@ var app = new Vue({
   		postId = params.postId;
   		// get initial data
 	  	getData().then(()=>{
-			this.posts = data
+			this.currentState.posts = data
 		});
   	} else {
   		this.input = true
@@ -208,13 +210,13 @@ var app = new Vue({
 	// endless scroll
 	$(window).on("scroll", debounce(() =>{
 		//no endless scroll in threads and filtered
-		if(this.thread || this.filter) return;
+		if(this.currentState.thread || this.currentState.filter) return;
 
 		var scrollLeft = $(document).height() - $(window).scrollTop();
 		var windowHeight = $(window).outerHeight();
 		if (scrollLeft <= 2 * windowHeight) {
 			getData().then(()=>{
-				this.posts = data
+				this.currentState.posts = data
 			});
 		}
 	}, 250));
@@ -222,23 +224,28 @@ var app = new Vue({
 	// event listener for filter-oj
 	this.$bus.$on('filter-oj', (ojId) => {
 		this.saveScroll();
-		// leave thread, if there
-		this.thread = null;
-		if(ojId){
-			this.posts = ojs[ojId]	
-			this.filter = ojId
-		} else {
-			this.posts = data
-			this.filter = null
-		}
+		this.states.push({
+			scroll: 0,
+			filter: ojId,
+			posts: ojs[ojId]
+		})
 		this.reScroll();
     })
 
     //event listener for thread
     this.$bus.$on('thread', (post) => {
-    	this.saveScroll();
-		this.thread = post
+		this.saveScroll();
+		this.states.push({
+			scroll: 0,
+			thread: post,
+			posts: ojs[post.reference]
+		})
 		this.reScroll();
+    })
+
+    this.$bus.$on('back', (post) => {
+    	this.states.pop();
+    	this.reScroll();
     })
   }
 })
