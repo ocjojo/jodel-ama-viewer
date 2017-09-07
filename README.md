@@ -12,11 +12,8 @@ I wrote this to make it easier to view the questions to answers in [#JodelWahl](
 
 1. Get a sharable link to a jodel. E.g. `https://share.jodel.com/post?postId=59aea982039e85001026c0d8&ojFilter=false`
 2. Replace `https://share.jodel.com/post` with `https://ocjojo.github.io/jodel-ama-viewer/`
-
-While scrolling down you might find jodels referencing previously asked questions.
-You can click on @{UserId} links to get a view with the post from UserId. So you can look up the original questions.
-
-By clicking on a UserId itself you can filter by a user.
+3. The best way to view a AMA is to click on "OJ" to filter the jodels of OJ.  
+Then click on the references @{User} to see the posts of User together with the answer of OJ.
 
 ## Suggestions & Bugs
 

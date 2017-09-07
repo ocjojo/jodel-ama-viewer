@@ -209,14 +209,15 @@ var app = new Vue({
 
 	// endless scroll
 	$(window).on("scroll", debounce(() =>{
-		//no endless scroll in threads and filtered
-		if(this.currentState.thread || this.currentState.filter) return;
-
 		var scrollLeft = $(document).height() - $(window).scrollTop();
 		var windowHeight = $(window).outerHeight();
 		if (scrollLeft <= 2 * windowHeight) {
 			getData().then(()=>{
-				this.currentState.posts = data
+				if(this.currentState.filter){
+					this.currentState.posts = ojs[this.currentState.filter];	
+				} else {
+					this.currentState.posts = data;
+				}
 			});
 		}
 	}, 250));
@@ -238,7 +239,8 @@ var app = new Vue({
 		this.states.push({
 			scroll: 0,
 			thread: post,
-			posts: ojs[post.reference]
+			posts: ojs[post.reference],
+			filter: [post.reference]
 		})
 		this.reScroll();
     })
