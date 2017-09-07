@@ -53,7 +53,7 @@ function getData(){
 
 function transformData(res){
 	// save reference to next batch of replies
-	next = data.next || next;
+	next = res.next || next;
 
 	// match important data in html string and save to objects
 	// this is way faster than parsing the string to a dom representation
